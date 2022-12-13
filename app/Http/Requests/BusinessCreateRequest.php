@@ -37,6 +37,7 @@ class BusinessCreateRequest extends FormRequest
             'phone' => 'required',
             'display_phone' => 'required',
             'distance' => 'required',
+            'categories' => 'array',
         ];
     }
 }

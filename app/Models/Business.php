@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Business extends Model
 {
@@ -24,12 +25,15 @@ class Business extends Model
         'distance',
     ];
 
-    public function businessesKey()
-    {
-//        return $this->hasMany(Categories::class, 'business', 'id');
-//        return $this->hasMany(Coordinates::class, 'business', 'id');
-//        return $this->hasMany(Location::class, 'business', 'id');
-    }
-
     protected $hidden = [];
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            related: Category::class,
+            table: 'business_category',
+            foreignPivotKey: 'business_id',
+            relatedPivotKey: 'category_id'
+        );
+    }
 }

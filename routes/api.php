@@ -23,5 +23,5 @@ Route::prefix('business')->group(function () {
     Route::post('/', [BusinessesController::class, 'store']);
     Route::put('/', [BusinessesController::class, 'update']);
     Route::delete('/', [BusinessesController::class, 'destroy']);
-    Route::get('/search', [BusinessesController::class, 'getData']);
+    Route::get('/search', [BusinessesController::class, 'search']);
 });
