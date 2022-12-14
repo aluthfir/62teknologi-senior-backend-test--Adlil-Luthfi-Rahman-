@@ -108,21 +108,56 @@ class BusinessesController extends Controller
 //        }
 //    }
 
-    public function search(Request $request): JsonResponse
+    public function search(Request $request): JsonResponse //search data with query.
     {
-        try {
+        try
+        {
             $data = Business::with('categories')
-                ->when($request->has('alias'), static function ($query) use ($request) {
-                    if (!blank($request->alias)) {
-                        return $query->where('alias', 'LIKE', "%{$request->alias}%");
+                ->when($request->has('is_closed'), static function ($query) use ($request) //search by is_closed true/false
+                {
+                    if (!blank($request->alias))
+                    {
+                        return $query->where('is_closed', 'LIKE', "%{$request->is_closed}%");
                     }
-
                     return $query;
                 })
-                ->get();
+                ->when($request->has('alias'), static function ($query) use ($request) //search by category-alias
+                {
+                    if (!blank($request->alias))
+                    {
+                        return $query->where('alias', 'LIKE', "%{$request->alias}%");
+                    }
+                    return $query;
+                })
+                ->when($request->has('price'), static function ($query) use ($request) //search by price
+                {
+                    if (!blank($request->price))
+                    {
+                        return $query->where('price', 'LIKE', "%{$request->price}%");
+                    }
+                    return $query;
+                })
+                ->when($request->has('offset'), static function ($query) use ($request) //pagination offset
+                {
+                    if (!blank($request->offset))
+                    {
+                        return $query->offset($request->offset);
+                    }
+                    return $query;
+                })
+                ->when($request->has('limit'), static function ($query) use ($request) //pagination limit
+                {
+                    if (!blank($request->limit))
+                    {
+                        return $query->limit($request->limit);
+                    }
+                    return $query;
+                })->get();
 
             return $this->sendResponse($data);
-        } catch (Exception $e) {
+        }
+        catch (Exception $e)
+        {
             return $this->logAndSendErrorResponse($e->getMessage(), $e);
         }
     }
@@ -131,9 +166,10 @@ class BusinessesController extends Controller
      * @param  BusinessCreateRequest  $request
      * @return JsonResponse
      */
-    public function store(BusinessCreateRequest $request): JsonResponse
+    public function store(BusinessCreateRequest $request): JsonResponse //insert values to DB
     {
-        try {
+        try
+        {
             DB::beginTransaction();
 
             // get category from request
@@ -145,7 +181,8 @@ class BusinessesController extends Controller
             $notInRecords = $categories->whereNotIn('alias', $catRecords->pluck('alias'));
 
             // create categories if not exists
-            foreach ($notInRecords as $notInRecord) {
+            foreach ($notInRecords as $notInRecord)
+            {
                 $catRecords[] = Category::create($notInRecord);
             }
 
@@ -157,7 +194,9 @@ class BusinessesController extends Controller
             DB::commit();
 
             return $this->sendResponse($business);
-        } catch (Exception $e) {
+        }
+        catch (Exception $e)
+        {
             DB::rollBack();
 
             return $this->logAndSendErrorResponse($e->getMessage(), $e);
@@ -168,9 +207,10 @@ class BusinessesController extends Controller
      * @param  BusinessUpdateRequest  $request
      * @return JsonResponse
      */
-    public function update(BusinessUpdateRequest $request): JsonResponse
+    public function update(BusinessUpdateRequest $request): JsonResponse //updating existing data by id
     {
-        try {
+        try
+        {
             DB::beginTransaction();
 
             $business = Business::findOrFail($request->id);
@@ -179,7 +219,9 @@ class BusinessesController extends Controller
             DB::commit();
 
             return $this->sendResponse($business);
-        } catch (Exception $e) {
+        }
+        catch (Exception $e)
+        {
             DB::rollBack();
 
             return $this->logAndSendErrorResponse($e->getMessage(), $e);
@@ -190,9 +232,10 @@ class BusinessesController extends Controller
      * @param  Request  $request
      * @return JsonResponse
      */
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request): JsonResponse //deleting a data entry by id
     {
-        try {
+        try
+        {
             DB::beginTransaction();
 
             $business = Business::findOrFail($request->id);
@@ -200,10 +243,13 @@ class BusinessesController extends Controller
 
             DB::commit();
 
-            return $this->sendResponse([
+            return $this->sendResponse
+            ([
                 'message' => 'Business Deleted',
             ]);
-        } catch (Exception $e) {
+        }
+        catch (Exception $e)
+        {
             DB::rollBack();
 
             return $this->logAndSendErrorResponse($e->getMessage(), $e);

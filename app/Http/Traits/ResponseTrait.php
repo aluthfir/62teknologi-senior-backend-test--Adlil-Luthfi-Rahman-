@@ -19,10 +19,10 @@ trait ResponseTrait
      */
     private function setData($data)
     {
-        if ($data instanceof Collection) {
+        if ($data instanceof Collection)
+        {
             return $data->toArray();
         }
-
         return $data;
     }
 
